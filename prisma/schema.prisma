@@ -6,24 +6,28 @@ generator client {
 }
 
 datasource db {
-    provider = "sqlite"
-    url      = "file:./dev.db"
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
 }
 
 model User {
-    id        String    @id @default(cuid())
-    email     String    @unique
+    id        String        @id @default(cuid()) @map("_id")
+    email     String        @unique
     password  String
     name      String
     position  String
     company   Company?
     owned     Data[]
-    history   History[]
+    sold      Transaction[] @relation(name: "sold")
+    soldIDs   String[]
+    bought    Transaction[] @relation(name: "bought")
+    boughtIDs String[]
     companyId String?
+    balande   Float         @default(0)
 }
 
 model Company {
-    id          String @id @default(cuid())
+    id          String @id @default(cuid()) @map("_id")
     name        String
     commerceId  String @unique
     established String
@@ -32,40 +36,48 @@ model Company {
 }
 
 model Data {
-    id       String   @id @default(cuid())
-    fileName String
-    user     User     @relation(fields: [userId], references: [id])
-    userId   String
-    listing  Listing?
+    id                  String               @id @default(cuid()) @map("_id")
+    fileName            String
+    owner               User                 @relation(fields: [ownerId], references: [id])
+    ownerId             String
+    listing             Listing?
+    title               String
+    description         String
+    extraServiceRequest ExtraServiceRequest?
 }
 
 model Listing {
-    id                  String               @id @default(cuid())
-    price               Int
-    data                Data                 @relation(fields: [dataId], references: [id])
-    dataId              String               @unique
-    ExtraServiceRequest ExtraServiceRequest?
+    id              String @id @default(cuid()) @map("_id")
+    price           Int
+    data            Data   @relation(fields: [dataId], references: [id])
+    dataId          String @unique
+    title           String
+    processingPrice Float
 }
 
-model History {
-    id            String         @id @default(cuid())
-    user          User           @relation(fields: [userId], references: [id])
-    userId        String
+model Transaction {
+    id            String         @id @default(cuid()) @map("_id")
+    seller        User           @relation("sold", fields: [sellerId], references: [id])
+    sellerId      String         @unique
+    buyer         User           @relation("bought", fields: [buyerId], references: [id])
+    buyerId       String         @unique
     price         Int
-    date          DateTime
+    date          DateTime       @default(now())
     extraServices ExtraService[]
 }
 
 model ExtraServiceRequest {
-    listing   Listing @relation(fields: [listingId], references: [id])
-    listingId String  @unique
-    type      String
-    details   String
+    id      String @id @default(cuid()) @map("_id")
+    data    Data   @relation(fields: [dataId], references: [id])
+    dataId  String @unique
+    type    String
+    details String
 }
 
 model ExtraService {
-    history   History @relation(fields: [historyId], references: [id])
-    historyId String  @unique
-    type      String
-    price     Int
+    id            String      @id @default(cuid()) @map("_id")
+    transaction   Transaction @relation(fields: [transactionId], references: [id])
+    transactionId String      @unique
+    type          String
+    price         Int
 }
