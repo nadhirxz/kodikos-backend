@@ -15,6 +15,10 @@ export const registerSchema = z.object({
 	email: z.string().email('Invalid email address'),
 	name: z.string().min(1, 'Name is required'),
 	password: z.string().min(8, 'Password must be at least 8 characters'),
+	position: z.string().min(3, 'Position is required'),
+	companyName: z.string().min(3, 'Company name is required'),
+	commerceId: z.string().min(3, 'Commerce ID is required'),
+	established: z.string().min(3, 'Established date is required'),
 });
 
 export const loginSchema = z.object({

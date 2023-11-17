@@ -8,7 +8,7 @@ import { registerSchema, validateRequestSchema } from '../utils/validation';
 const router = Router();
 
 router.post('/', validateRequestSchema(registerSchema), async (req, res) => {
-	const { email, name, password } = req.body;
+	const { email, name, password, position, companyName, commerceId, established } = req.body;
 
 	const userExists = await db.user.findUnique({ where: { email } });
 
@@ -16,12 +16,24 @@ router.post('/', validateRequestSchema(registerSchema), async (req, res) => {
 
 	const id = createId();
 
+	const existingCompany = await db.company.findUnique({ where: { commerceId } });
+
+	if (existingCompany) return res.status(400).json({ error: 'Company already exists' });
+
 	const user = await db.user.create({
 		data: {
 			id,
 			email,
 			name,
 			password: hashPassword(password, id),
+			position,
+			company: {
+				create: {
+					name: companyName,
+					commerceId,
+					established,
+				},
+			}
 		},
 	});
 
