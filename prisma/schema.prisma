@@ -67,11 +67,13 @@ model Transaction {
 }
 
 model ExtraServiceRequest {
-    id      String @id @default(cuid()) @map("_id")
-    data    Data   @relation(fields: [dataId], references: [id])
-    dataId  String @unique
-    type    String
-    details String
+    id        String  @id @default(cuid()) @map("_id")
+    data      Data    @relation(fields: [dataId], references: [id])
+    dataId    String  @unique
+    type      String
+    details   String
+    fulfilled Boolean @default(false)
+    price     Float   @default(0)
 }
 
 model ExtraService {
