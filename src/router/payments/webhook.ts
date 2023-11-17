@@ -21,8 +21,7 @@ router.post('/', async (req, res) => {
 
 	const session = event.data.object as Stripe.Checkout.Session;
 
-	const userId = session.metadata!.userId as string;
-	const processing = session.metadata!.processing as unknown as boolean;
+	const { userId, processing, insights } = session.metadata! as unknown as { userId: string; processing: boolean; insights: string };
 
 	const listing = await db.listing.findUnique({
 		where: { id: session.metadata!.listingId as string },
@@ -39,6 +38,16 @@ router.post('/', async (req, res) => {
 		} catch (error) {
 			return res.status(400).json({ error: 'Error processing listing' });
 		}
+
+	if (!!insights?.length) {
+		await db.extraServiceRequest.create({
+			data: {
+				type: 'insights',
+				details: insights,
+				data: { connect: { id: listing.data.id } },
+			},
+		});
+	}
 
 	await db.$transaction(async tx => {
 		await tx.data.update({

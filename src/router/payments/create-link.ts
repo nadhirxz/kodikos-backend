@@ -8,7 +8,7 @@ const router = Router();
 const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY!);
 
 router.post('/', async (req: CustomRequest, res) => {
-	const { listingId, processing } = req.body;
+	const { listingId, processing, insights } = req.body;
 
 	const listing = await db.listing.findUnique({ where: { id: listingId } });
 
@@ -26,7 +26,7 @@ router.post('/', async (req: CustomRequest, res) => {
 				quantity: 1,
 			},
 		],
-		metadata: { userId: req.user!.id, listingId, },
+		metadata: { userId: req.user!.id, listingId, insights },
 		mode: 'payment',
 		success_url: `${process.env.FRONTEND_URL!}/listing/${listingId}`,
 		cancel_url: `${process.env.FRONTEND_URL!}/listing/${listingId}`,
