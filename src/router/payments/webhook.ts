@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import stripe, { Stripe } from 'stripe';
 import db from '../../utils/db';
+import axios from 'axios';
 
 const router = Router();
 
@@ -31,6 +32,13 @@ router.post('/', async (req, res) => {
 	});
 
 	if (!listing) return res.status(400).json({ error: 'Listing does not exist' });
+
+	if (processing)
+		try {
+			await axios.post(process.env.PROCESSING_ENDPOINT!, { dataId: listing.data.id });
+		} catch (error) {
+			return res.status(400).json({ error: 'Error processing listing' });
+		}
 
 	await db.$transaction(async tx => {
 		await tx.data.update({

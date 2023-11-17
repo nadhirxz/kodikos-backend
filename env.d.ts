@@ -8,6 +8,7 @@ declare global {
 			readonly HASH_SECRET_SALT: string;
 			readonly STRIPE_SECRET_KEY: string;
 			readonly ENDPOINT_SECRET: string;
+			readonly PROCESSING_ENDPOINT: string;
 		}
 	}
 }
